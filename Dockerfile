@@ -1,4 +1,4 @@
-FROM ruby:3.3.4-alpine
+FROM ruby:3.4.3-alpine
 
 ENV APP_ROOT=/usr/src/app
 ENV DATABASE_PORT=5432
@@ -23,9 +23,7 @@ RUN apk add --update \
 # Will invalidate cache as soon as the Gemfile changes
 COPY Gemfile Gemfile.lock $APP_ROOT/
 
-RUN bundle config --global frozen 1 \
- && bundle config set without 'test' \
- && bundle install --jobs 2
+RUN bundle config set without 'test' && bundle install --jobs 2
 
 # ========================================================
 # Application layer
