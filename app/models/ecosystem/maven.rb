@@ -15,6 +15,11 @@ module Ecosystem
       ':'
     end
 
+    def check_status_url(package)
+      group_id, artifact_id = *package.name.split(':', 2)
+      "#{@registry_url}/#{group_id.gsub(".", "/")}/#{artifact_id}"
+    end
+
     def download_url(package, version)
       return nil unless version.present?
       group_id, artifact_id = *package.name.split(':', 2)
@@ -24,7 +29,12 @@ module Ecosystem
 
     def registry_url(package, version = nil)
       group_id, artifact_id = *package.name.split(':', 2)
-      "#{@registry_url}/#{group_id.gsub(".", "/")}/#{artifact_id}/#{version.present? ? version.number + '/' : ''}"
+
+      if @registry_url == "https://repo.maven.apache.org/maven2" || @registry_url == "https://repo1.maven.org/maven2"
+        "https://central.sonatype.com/artifact/#{group_id}/#{artifact_id}/#{version}"
+      else
+        "#{@registry_url}/#{group_id.gsub(".", "/")}/#{artifact_id}/#{version.present? ? version.number + '/' : ''}"
+      end
     end
 
     def documentation_url(package, version = nil)
@@ -47,12 +57,12 @@ module Ecosystem
     end
 
     def recently_updated_package_names
-      (recently_updated_package_names_from_sonatype + recently_updated_package_names_from_libraries_io).uniq.first(20)
+      (recently_updated_package_names_from_sonatype + recently_updated_package_names_from_libraries_io).uniq
     end
 
     def recently_updated_package_names_from_sonatype
       url = "https://central.sonatype.com/api/internal/browse/components?repository=maven-central"
-      connection = Faraday.new(url, headers: { "User-Agent" => "packages.khulnasoft.com (packages@khulnasoft.com)", "Content-Type" => "application/json" }) do |builder|
+      connection = Faraday.new(url, headers: { "User-Agent" => "packages.ecosyste.ms (packages@ecosyste.ms)", "Content-Type" => "application/json" }) do |builder|
         builder.use Faraday::FollowRedirects::Middleware
         builder.request :retry, { max: 5, interval: 0.05, interval_randomness: 0.5, backoff_factor: 2 }
         builder.request :instrumentation
