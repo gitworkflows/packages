@@ -23,7 +23,7 @@ RUN apk add --update \
 # Will invalidate cache as soon as the Gemfile changes
 COPY Gemfile Gemfile.lock $APP_ROOT/
 
-RUN bundle config set without 'test' && bundle install --jobs 2
+RUN bundle config --global frozen 1 && bundle config set without 'test' && bundle install --jobs 2
 
 # ========================================================
 # Application layer
